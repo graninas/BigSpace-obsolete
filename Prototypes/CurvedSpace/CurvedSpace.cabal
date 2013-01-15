@@ -1,0 +1,29 @@
+name:           CurvedSpace
+version:        0.1
+cabal-version:  >= 1.2
+build-type:     Simple
+author:         gas
+
+library
+  hs-source-dirs:  src
+  build-depends:   
+                   base >= 4,
+                   vector,
+                   OpenGL,
+                   bytestring,
+                   array,
+                   binary,
+                   GLUT,
+                   haskell-src,
+                   network,
+                   GLURaw,
+                   OpenGLRaw,
+                   old-time
+  ghc-options:     -O1
+
+executable CurvedSpace
+  hs-source-dirs:  src
+  main-is:         Main.hs
+  build-depends:   base >= 4
+  ghc-options:     -O1
+
