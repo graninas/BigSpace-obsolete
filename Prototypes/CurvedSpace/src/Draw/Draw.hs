@@ -6,8 +6,8 @@ import Common.Units
 import Common.GLTypes
 
 
-draw :: IO ()
-draw = do
+drawScene :: IO ()
+drawScene = do
     GL.clear [GL.ColorBuffer, GL.DepthBuffer]
     GL.loadIdentity
     

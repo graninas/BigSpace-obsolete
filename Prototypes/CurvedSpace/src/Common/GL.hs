@@ -1,4 +1,4 @@
-module Common.GL (initialize, redrawWindow) where
+module Common.GL (initializeGLWindow, redrawGLWindow, startGlutLoop) where
 
 import Graphics.Rendering.OpenGL
 import qualified Graphics.Rendering.OpenGL.Raw as GLRaw
@@ -9,8 +9,8 @@ import qualified Control.Concurrent.MVar as M (tryTakeMVar, tryPutMVar, MVar)
 
 import Common.GLTypes
 
-initialize :: IO () -> IO GLUT.Window
-initialize drawFunc = do
+initializeGLWindow :: IO () -> IO GLUT.Window
+initializeGLWindow drawFunc = do
     (progName, _) <- GLUT.getArgsAndInitialize
     wnd <- GLUT.createWindow progName
     GLUT.initialDisplayMode GLUT.$= [GLUT.RGBAMode, GLUT.WithDepthBuffer, GLUT.DoubleBuffered]
@@ -28,9 +28,11 @@ initialize drawFunc = do
     
     return wnd
     
-redrawWindow :: GLUT.Window -> IO ()
-redrawWindow wnd = GLUT.postRedisplay (Just wnd)
+redrawGLWindow :: GLUT.Window -> IO ()
+redrawGLWindow wnd = GLUT.postRedisplay (Just wnd)
 
+startGlutLoop :: IO ()
+startGlutLoop = GLUT.mainLoop
 
 displayCallback :: IO () -> IO ()
 displayCallback drawFunc = do
