@@ -10,14 +10,6 @@ type GLfColor3  = GL.Color3  GL.GLfloat
 type GLfColor4  = GL.Color4  GL.GLfloat
 type GLfTexCoord2 = GL.TexCoord2 GL.GLfloat
 
-type TextureName = String
-type RawTexture  = (TextureName, FilePath)
-type RawTextures = [RawTexture]
 
-type PreparedTextureObject  = (TextureName, GL.TextureObject)
-type PreparedTextureObjects = [PreparedTextureObject]
-data GLResources = GLResources PreparedTextureObjects
-
-type DrawFunction = GLResources -> GL.GLfloat -> IO ()
 
 

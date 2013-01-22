@@ -25,5 +25,5 @@ executable CurvedSpace
   hs-source-dirs:  src
   main-is:         Main.hs
   build-depends:   base >= 4
-  ghc-options:     -O1
+  ghc-options:     -O1 -threaded -outputdir ../bin -o ../bin/CurvedSpace Main.hs
 

@@ -1,20 +1,23 @@
-module Draw.GLInit where
+module Common.GL (initialize, redrawWindow) where
 
 import Graphics.Rendering.OpenGL
 import qualified Graphics.Rendering.OpenGL.Raw as GLRaw
 import qualified Graphics.Rendering.GLU.Raw as GLURaw (gluPerspective)
 import qualified Graphics.UI.GLUT as GLUT
 
-import Network.Socket.ByteString
-import qualified Data.ByteString.Char8 as B
-import qualified Control.Concurrent.MVar as M (tryTakeMVar, tryPutMVar, newEmptyMVar, MVar) 
+import qualified Control.Concurrent.MVar as M (tryTakeMVar, tryPutMVar, MVar) 
 
 import Common.GLTypes
 
-
-initGL :: IO ()
-initGL = do
+initialize :: IO () -> IO GLUT.Window
+initialize drawFunc = do
+    (progName, _) <- GLUT.getArgsAndInitialize
+    wnd <- GLUT.createWindow progName
     GLUT.initialDisplayMode GLUT.$= [GLUT.RGBAMode, GLUT.WithDepthBuffer, GLUT.DoubleBuffered]
+    
+    GLUT.displayCallback GLUT.$= (displayCallback drawFunc)
+    GLUT.reshapeCallback GLUT.$= Just reshapeCallback
+    
     GLRaw.glShadeModel GLRaw.gl_SMOOTH
     GLRaw.glClearColor 0 0 0 0
     GLRaw.glClearDepth 1
@@ -22,18 +25,20 @@ initGL = do
     GLRaw.glDepthFunc GLRaw.gl_LEQUAL
     GLRaw.glHint GLRaw.gl_PERSPECTIVE_CORRECTION_HINT GLRaw.gl_NICEST
     GLRaw.glEnable GLRaw.gl_TEXTURE_2D
+    
+    return wnd
+    
+redrawWindow :: GLUT.Window -> IO ()
+redrawWindow wnd = GLUT.postRedisplay (Just wnd)
 
-drawSceneCallback :: M.MVar GLfloat -> GLResources -> DrawFunction -> IO ()
-drawSceneCallback mVar ress draw = do
-     maybeVar <- M.tryTakeMVar mVar
-     case maybeVar of
-        Nothing -> GLUT.swapBuffers
-        Just n -> do
-            draw ress n
-            GLUT.swapBuffers
 
-resizeSceneCallback (GLUT.Size w 0) = resizeSceneCallback (GLUT.Size w 1)
-resizeSceneCallback (GLUT.Size width height) = do
+displayCallback :: IO () -> IO ()
+displayCallback drawFunc = do
+     drawFunc
+     GLUT.swapBuffers
+
+reshapeCallback (GLUT.Size w 0) = reshapeCallback (GLUT.Size w 1)
+reshapeCallback (GLUT.Size width height) = do
     GLRaw.glViewport 0 0 (fromIntegral width) (fromIntegral height)
     GLRaw.glMatrixMode GLRaw.gl_PROJECTION
     GLRaw.glLoadIdentity
@@ -42,5 +47,4 @@ resizeSceneCallback (GLUT.Size width height) = do
     GLRaw.glLoadIdentity
     GLUT.swapBuffers
 
-postRedisplayMsg = GLUT.postRedisplay
 
