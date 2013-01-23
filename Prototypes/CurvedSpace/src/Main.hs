@@ -1,8 +1,5 @@
 module Main where
 
-import Network.Socket hiding (recv)
-import Network.Socket.ByteString
-import qualified Data.ByteString.Char8 as B
 import qualified Control.Concurrent.MVar as M (tryTakeMVar, tryPutMVar, newEmptyMVar, newMVar, MVar) 
 import qualified Control.Concurrent as C
 import Control.Monad (when)
@@ -16,7 +13,13 @@ import Common.InteropTypes
 import Common.GLTypes
 import Common.GL
 import Common.Constants
+import Common.WorldServer
 import Draw.Draw
+
+
+
+worldServerName = "[WorldServer]"
+gameLoopName = "[GameLoop]"
 
 main::IO ()
 main = do
@@ -26,11 +29,7 @@ main = do
     let mvars = (gameMVar, worldMVar)
 
 -- Socket Network Server
-    putStrLn "Starting [WorldServer]..."
-    sock <- socket AF_INET Stream defaultProtocol
-    bindSocket sock (SockAddrInet 4343 0)
-    listen sock 1
-    socketServerThread <- C.forkOS $ acceptConnections mvars sock
+    serverTreadId <- startServer worldServerName serverAddress mvars
 
     wnd <- initializeGLWindow drawScene
 
@@ -46,34 +45,16 @@ main = do
     putStrLn "Ok."
 
 
-worldServerName = "[WorldServer]"
-gameLoopName = "[GameLoop]"
-
-acceptConnections ::
-    InteropMsg
-    -> Socket
-    -> IO ()
-acceptConnections mvars@(gameMVar, worldMVar) sock = do
-    (conn, _) <- accept sock
-    res <- recv conn 4096
-    sClose conn
-    B.putStr . B.pack $ (worldServerName ++ " Received: ")
-    B.putStrLn res
-    case reverse . take 4 . reverse . B.unpack $ res of
-        "exit" -> do
-            putStrLn (worldServerName ++ " Stopping game cycle...")
-            C.putMVar worldMVar "exit"
-            putStr (worldServerName ++ " Stopping self...")
-            sClose sock
-            putStrLn " Done."
-        _ -> acceptConnections mvars sock
 
 
+
+-- | Processes incoming message.
 processMessage :: Maybe String -> FrameInfo -> IO (Bool, FrameInfo)
 processMessage Nothing        frameInfo = return (False, frameInfo)
 processMessage (Just "exit")  frameInfo = putStrLn (gameLoopName ++ " Finish message received.") >> return (True, frameInfo)
 processMessage (Just unknown) frameInfo = putStrLn (gameLoopName ++ " Unknown message: " ++ unknown) >> return (True, frameInfo) 
 
+-- | Redraws GL window and puts message about frame to console.
 redraw :: GLUT.Window -> InteropMsg -> FrameInfo -> IO (Bool, FrameInfo)
 redraw wnd mvars (iter, nextFrameTime) = do
         let newNextFrameTime = T.addToClockTime framesFrequency nextFrameTime
@@ -84,6 +65,10 @@ redraw wnd mvars (iter, nextFrameTime) = do
         return (False, (newIter, newNextFrameTime))
 
 
+-- | Evaluate game loop operations.
+-- | Operation have type (Bool, IO ()) where Bool - is flag indicating
+-- | if operation should be evaluated.
+-- | If operation returns (True, _) then game cycle should be stopped.
 evalOperations :: FrameInfo -> [(Bool, IO (Bool, FrameInfo))] -> IO (Bool, FrameInfo)
 evalOperations defaultFrameInfo [] = return (False, defaultFrameInfo)
 evalOperations defaultFrameInfo ( (evaluable, op) : ops) = 
@@ -97,11 +82,7 @@ evalOperations defaultFrameInfo ( (evaluable, op) : ops) =
 
 
 -- | Main game loop. Processes incoming MVar (worldVar) and sends outcoming MVar (gameMVar).
-gameLoop :: 
-    GLUT.Window
-    -> InteropMsg
-    -> FrameInfo
-    -> IO ()
+gameLoop :: GLUT.Window -> InteropMsg -> FrameInfo -> IO ()
 gameLoop wnd mvars@(gameMVar, worldMVar) frameInfo@(iter, nextFrameTime) = do
     curClockTime <- T.getClockTime
     
