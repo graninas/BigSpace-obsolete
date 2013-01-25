@@ -16,7 +16,7 @@ import Common.Constants
 import Common.WorldServer
 import Draw.Draw
 
-
+import Common.World
 
 worldServerName = "[WorldServer]"
 gameLoopName = "[GameLoop]"

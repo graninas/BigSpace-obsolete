@@ -5,7 +5,7 @@ build-type:     Simple
 author:         gas
 
 library
-  hs-source-dirs:  src
+  hs-source-dirs:  CurvedSpace
   build-depends:   
                    base >= 4,
                    vector,
@@ -18,12 +18,13 @@ library
                    network,
                    GLURaw,
                    OpenGLRaw,
-                   old-time
+                   old-time,
+                   QuickCheck
   ghc-options:     -O1
 
 executable CurvedSpace
-  hs-source-dirs:  src
-  main-is:         Main.hs
+  hs-source-dirs:  CurvedSpace
+  main-is:         CurvedSpace.hs
   build-depends:   base >= 4
-  ghc-options:     -O1 -threaded -outputdir ../bin -o ../bin/CurvedSpace Main.hs
+  ghc-options:     -O1 -threaded -outputdir ./bin -o ./bin/CurvedSpace ./CurvedSpace/CurvedSpace.hs
 
