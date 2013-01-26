@@ -7,7 +7,6 @@ import Data.Maybe (isJust, fromJust)
 import qualified System.Time as T
 import qualified Graphics.UI.GLUT as GLUT
 
-
 import Common.Types
 import Common.InteropTypes
 import Common.GLTypes
@@ -17,6 +16,20 @@ import Common.WorldServer
 import Draw.Draw
 
 import Common.World
+
+import qualified Control.Monad.State as State
+
+data GameWorld = GameWorld
+     { objectPos :: WorldDim
+     , objectVelocity :: (Word, Word, Word)
+     }
+  deriving (Show, Eq)
+
+type GW a = State.StateT GameWorld IO a
+
+
+
+
 
 worldServerName = "[WorldServer]"
 gameLoopName = "[GameLoop]"
@@ -36,7 +49,10 @@ main = do
 -- Main game loop
     currentTime <- T.getClockTime
     let startFrameInfo = (0, T.addToClockTime framesFrequency currentTime)
-    gameThreadId <- C.forkOS $ gameLoop wnd mvars startFrameInfo
+    
+    let gw = GameWorld homePoint (10, 4, 6)
+    let gameLoopF = gameLoop wnd mvars startFrameInfo
+    gameThreadId <- C.forkOS (gameThread gw gameLoopF)
 
     startGlutLoop
 
@@ -59,11 +75,12 @@ redraw :: GLUT.Window -> InteropMsg -> FrameInfo -> IO (Bool, FrameInfo)
 redraw wnd mvars (iter, nextFrameTime) = do
         let newNextFrameTime = T.addToClockTime framesFrequency nextFrameTime
         let newIter = iter + 1
-        putStr (gameLoopName ++ " Iteration: " ++ show newIter)
         redrawGLWindow wnd
-        putStrLn ". Drawn."
+        putStrLn (gameLoopName ++ " Iteration: " ++ show newIter)
+        
+        
+        
         return (False, (newIter, newNextFrameTime))
-
 
 -- | Evaluate game loop operations.
 -- | Operation have type (Bool, IO ()) where Bool - is flag indicating
@@ -80,21 +97,25 @@ evalOperations defaultFrameInfo ( (evaluable, op) : ops) =
                     else evalOperations frameInfo ops
         False -> evalOperations defaultFrameInfo ops  
 
+gameThread :: GameWorld -> GW () -> IO ()
+gameThread gw gameLoopF = State.evalStateT gameLoopF gw
 
 -- | Main game loop. Processes incoming MVar (worldVar) and sends outcoming MVar (gameMVar).
-gameLoop :: GLUT.Window -> InteropMsg -> FrameInfo -> IO ()
+gameLoop :: GLUT.Window -> InteropMsg -> FrameInfo -> GW ()
 gameLoop wnd mvars@(gameMVar, worldMVar) frameInfo@(iter, nextFrameTime) = do
-    curClockTime <- T.getClockTime
+    curClockTime <- State.liftIO T.getClockTime  
     
-    C.tryPutMVar gameMVar ((iter, curClockTime), "")
-    maybeWorldServerMessage <- C.tryTakeMVar worldMVar
+    State.liftIO ( C.tryPutMVar gameMVar ((iter, curClockTime), "") )
+    maybeWorldServerMessage <- State.liftIO (C.tryTakeMVar worldMVar)
     
     let operations = [ ((isJust maybeWorldServerMessage), processMessage maybeWorldServerMessage (iter, curClockTime))
-                     , ((curClockTime >= nextFrameTime),  redraw wnd mvars (iter, nextFrameTime)) ]
+                     , ((curClockTime >= nextFrameTime),  redraw wnd mvars (iter, nextFrameTime))
+                     ]
         
-    (done, newFrameInfo) <- evalOperations frameInfo operations
+    (done, newFrameInfo) <- State.liftIO (evalOperations frameInfo operations)
     case done of
-        True ->  putStrLn (gameLoopName ++ " Done.")
+        True ->  State.liftIO . putStrLn $ (gameLoopName ++ " Done.")
         False -> gameLoop wnd mvars newFrameInfo
-    
+
+
     

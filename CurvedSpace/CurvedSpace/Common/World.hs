@@ -4,30 +4,39 @@ import qualified Data.Word
 
 type Word = Data.Word.Word64
 
-data WorldDim = WorldDim Word
+data Axis = XAxis | YAxis | ZAxis | AnyAxis | AnyXYAxis
+    deriving (Show, Eq)
+data WorldAxis = WorldAxis Axis Word
     deriving (Show, Eq)
 
-instance Num WorldDim where
-    (+) (WorldDim x) (WorldDim y) = WorldDim (x + y)
-    (-) (WorldDim x) (WorldDim y) = WorldDim (x - y)
-    (*) (WorldDim x) (WorldDim y) = WorldDim (x * y)
-    negate (WorldDim x) = WorldDim x
-    abs (WorldDim x) = WorldDim (abs x)
-    signum (WorldDim x) = WorldDim (signum x)
-    fromInteger x = WorldDim (fromInteger x)
+instance Num WorldAxis where
+    (+) (WorldAxis a x) (WorldAxis b y) | a == b = WorldAxis a (x + y)
+                                        | otherwise = error "Axes should be same."
+    (-) (WorldAxis a x) (WorldAxis b y) | a == b = WorldAxis a (x - y)
+                                        | otherwise = error "Axes should be same."
+    (*) (WorldAxis a x) (WorldAxis b y) | a == b = WorldAxis a (x * y)
+                                        | otherwise = error "Axes should be same."
+    negate (WorldAxis a x) = WorldAxis a x
+    abs (WorldAxis a x) = WorldAxis a (abs x)
+    signum (WorldAxis a x) = WorldAxis a (signum x)
+    fromInteger x = WorldAxis AnyAxis (fromInteger x)
+
+toXWorldAxis, toYWorldAxis, toZWorldAxis :: WorldAxis -> WorldAxis
+toXWorldAxis (WorldAxis _ x) = WorldAxis XAxis x
+toYWorldAxis (WorldAxis _ x) = WorldAxis YAxis x
+toZWorldAxis (WorldAxis _ x) = WorldAxis ZAxis x
 
 class Scalable a where
-    toWorldDim :: a -> WorldDim
-    fromWorldDim :: WorldDim -> a
-
+    toWorldAxis :: a -> WorldAxis
+    fromWorldAxis :: WorldAxis -> a
 -- TODO:
 -- Check whether toString -> substring -> toInt is faster or not of power calculus.
 -- Check whether 'digits' module is faster or not.
 quadrantScale, clusterScale, areaScale, positionScale :: Word
-quadrantScale = 10^18
-clusterScale = 10^15
-areaScale = 10^12
-positionScale = 10^9
+quadrantScale = 10^19
+clusterScale = 10^18
+areaScale = 10^15
+positionScale = 10^12
 
 
 data Quadrant = Quadrant Word
@@ -38,35 +47,55 @@ data Area = Area Word
     deriving (Show, Eq)
 data Position = Position Word
     deriving (Show, Eq)
-data WorldPos = WorldPos Quadrant Cluster Area Position
+data Layer = Layer Word
+    deriving (Show, Eq)
+data GalaxyGrid = GalaxyXGrid Quadrant Cluster Area Position
+                | GalaxyYGrid Quadrant Cluster Area Position
+                | GalaxyLayer Quadrant Cluster Area Position
     deriving (Show, Eq)
 
 instance Scalable Quadrant where
-    toWorldDim (Quadrant x) = WorldDim (x * clusterScale)
-    fromWorldDim (WorldDim x) = Quadrant (x `div` clusterScale)
+    toWorldAxis (Quadrant x) = WorldAxis AnyXYAxis (x * clusterScale)
+    fromWorldAxis (WorldAxis _ x) = Quadrant (x `div` clusterScale)
     
 instance Scalable Cluster where
-    toWorldDim (Cluster x) = WorldDim (x * areaScale)
-    fromWorldDim wd@(WorldDim x) = Cluster ((x `mod` clusterScale) `div` areaScale)
+    toWorldAxis (Cluster x) = WorldAxis AnyXYAxis (x * areaScale)
+    fromWorldAxis wd@(WorldAxis _ x) = Cluster ((x `mod` clusterScale) `div` areaScale)
     
 instance Scalable Area where
-    toWorldDim (Area x) = WorldDim (x * positionScale)
-    fromWorldDim wd@(WorldDim x) = Area ((x `mod` areaScale) `div` positionScale)
+    toWorldAxis (Area x) = WorldAxis AnyXYAxis (x * positionScale)
+    fromWorldAxis wd@(WorldAxis _ x) = Area ((x `mod` areaScale) `div` positionScale)
     
 instance Scalable Position where
-    toWorldDim (Position x) = WorldDim x
-    fromWorldDim wd@(WorldDim x) = Position (x `mod` positionScale)
+    toWorldAxis (Position x) = WorldAxis AnyXYAxis x
+    fromWorldAxis wd@(WorldAxis _ x) = Position (x `mod` positionScale)
         
-instance Scalable WorldPos where
-    toWorldDim (WorldPos q c a p) = toWorldDim q + toWorldDim c + toWorldDim a + toWorldDim p
-    fromWorldDim wd@(WorldDim x) = let
-        qd = fromWorldDim wd
-        cl = fromWorldDim wd
-        ar = fromWorldDim wd
-        pos = fromWorldDim wd
-        in WorldPos qd cl ar pos 
+instance Scalable GalaxyGrid where
+    toWorldAxis (GalaxyXGrid q c a p) = toXWorldAxis (toWorldAxis q + toWorldAxis c + toWorldAxis a + toWorldAxis p)
+    toWorldAxis (GalaxyYGrid q c a p) = toYWorldAxis (toWorldAxis q + toWorldAxis c + toWorldAxis a + toWorldAxis p)
+    toWorldAxis (GalaxyLayer q c a p) = toZWorldAxis (toWorldAxis q + toWorldAxis c + toWorldAxis a + toWorldAxis p)
+    fromWorldAxis wd@(WorldAxis a x) = let
+        qd = fromWorldAxis wd
+        cl = fromWorldAxis wd
+        ar = fromWorldAxis wd
+        pos = fromWorldAxis wd
+        in case a of
+            XAxis -> GalaxyXGrid qd cl ar pos
+            YAxis -> GalaxyYGrid qd cl ar pos
+            ZAxis -> GalaxyLayer qd cl ar pos
+            otherwise -> error ("WorldAxis Axis should be concrete, not " ++ show a ++ ".")
 
  
+data WorldDim = WorldDim WorldAxis WorldAxis WorldAxis 
+    deriving (Show, Eq)
  
+
+homeXAxis, homeYAxis, homeZAxis :: WorldAxis
+homeXAxis = toXWorldAxis . fromInteger $ 255548795444
+homeYAxis = toYWorldAxis . fromInteger $ 387957987
+homeZAxis = toZWorldAxis . fromInteger $ 123893249014
  
- 
+homePoint :: WorldDim
+homePoint = WorldDim homeXAxis homeYAxis homeZAxis
+    
+    

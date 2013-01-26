@@ -19,7 +19,8 @@ library
                    GLURaw,
                    OpenGLRaw,
                    old-time,
-                   QuickCheck
+                   QuickCheck,
+                   mtl
   ghc-options:     -O1
 
 executable CurvedSpace
