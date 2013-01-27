@@ -1,8 +1,6 @@
 module Common.World where
 
-import qualified Data.Word
-
-type Word = Data.Word.Word64
+import Common.Types
 
 data Axis = XAxis | YAxis | ZAxis | AnyAxis | AnyXYAxis
     deriving (Show, Eq)

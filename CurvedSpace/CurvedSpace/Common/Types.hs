@@ -1,5 +1,9 @@
 module Common.Types where
 
-import System.Time
+import qualified System.CPUTime as T
+import qualified Control.Monad.State as State
+import qualified Data.Word
 
-type FrameInfo = (Float, ClockTime)
+type Word = Data.Word.Word64
+
+

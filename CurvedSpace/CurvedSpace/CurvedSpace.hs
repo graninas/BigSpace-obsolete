@@ -2,23 +2,22 @@ module Main where
 
 import qualified Control.Concurrent.MVar as M (tryTakeMVar, tryPutMVar, newEmptyMVar, newMVar, MVar) 
 import qualified Control.Concurrent as C
+import qualified Graphics.UI.GLUT as GLUT
+import qualified Control.Monad.State as State
 import Control.Monad (when)
 import Data.Maybe (isJust, fromJust)
-import qualified System.Time as T
-import qualified Graphics.UI.GLUT as GLUT
 
 import Common.Types
 import Common.InteropTypes
 import Common.GLTypes
 import Common.GL
 import Common.Constants
-import Common.WorldServer
+import Common.TickTime
 import Draw.Draw
 
 import Common.World
 
-import qualified Control.Monad.State as State
-
+ 
 data GameWorld = GameWorld
      { objectPos :: WorldDim
      , objectVelocity :: (Word, Word, Word)
@@ -27,13 +26,6 @@ data GameWorld = GameWorld
 
 type GW a = State.StateT GameWorld IO a
 
-
-
-
-
-worldServerName = "[WorldServer]"
-gameLoopName = "[GameLoop]"
-
 main::IO ()
 main = do
 
@@ -41,81 +33,50 @@ main = do
     worldMVar <- M.newEmptyMVar
     let mvars = (gameMVar, worldMVar)
 
--- Socket Network Server
-    serverTreadId <- startServer worldServerName serverAddress mvars
-
     wnd <- initializeGLWindow drawScene
 
 -- Main game loop
-    currentTime <- T.getClockTime
-    let startFrameInfo = (0, T.addToClockTime framesFrequency currentTime)
+    currentTime <- getIOTickTime
+    let nextTactTime = addTickTime tactsFrequency currentTime
+    let startGameTact = GameTact 0 currentTime 0 0 currentTime nextTactTime 60.0
     
     let gw = GameWorld homePoint (10, 4, 6)
-    let gameLoopF = gameLoop wnd mvars startFrameInfo
-    gameThreadId <- C.forkOS (gameThread gw gameLoopF)
+    let gameLoopF = gameLoop wnd mvars startGameTact
+    gameThreadId <- C.forkOS (gameThreadFunc gameLoopF gw)
 
     startGlutLoop
-
---    C.killThread socketServerThread
 --    C.killThread gameThreadId
     putStrLn "Ok."
 
 
 
+-- | Runs game thread function. Currently it is gameLoop in State monad with IO.
+gameThreadFunc :: GW () -> GameWorld -> IO ()
+gameThreadFunc = State.evalStateT
 
+-- | Prints fps in console.
+showFps :: Float -> GW ()
+showFps fps = State.liftIO . putStrLn $ ("FPS: " ++ show fps)
 
--- | Processes incoming message.
-processMessage :: Maybe String -> FrameInfo -> IO (Bool, FrameInfo)
-processMessage Nothing        frameInfo = return (False, frameInfo)
-processMessage (Just "exit")  frameInfo = putStrLn (gameLoopName ++ " Finish message received.") >> return (True, frameInfo)
-processMessage (Just unknown) frameInfo = putStrLn (gameLoopName ++ " Unknown message: " ++ unknown) >> return (True, frameInfo) 
+-- | Prints information about elapsed time since previous frame.
+showElapsed :: Elapsed -> GW ()
+showElapsed (Elapsed ticks prevTime curTime) = State.liftIO $
+    putStrLn ("Ticks: " ++ show ticks ++ " PrevTime: " ++ show prevTime ++ " CurTime: " ++ show curTime)
 
--- | Redraws GL window and puts message about frame to console.
-redraw :: GLUT.Window -> InteropMsg -> FrameInfo -> IO (Bool, FrameInfo)
-redraw wnd mvars (iter, nextFrameTime) = do
-        let newNextFrameTime = T.addToClockTime framesFrequency nextFrameTime
-        let newIter = iter + 1
-        redrawGLWindow wnd
-        putStrLn (gameLoopName ++ " Iteration: " ++ show newIter)
-        
-        
-        
-        return (False, (newIter, newNextFrameTime))
-
--- | Evaluate game loop operations.
--- | Operation have type (Bool, IO ()) where Bool - is flag indicating
--- | if operation should be evaluated.
--- | If operation returns (True, _) then game cycle should be stopped.
-evalOperations :: FrameInfo -> [(Bool, IO (Bool, FrameInfo))] -> IO (Bool, FrameInfo)
-evalOperations defaultFrameInfo [] = return (False, defaultFrameInfo)
-evalOperations defaultFrameInfo ( (evaluable, op) : ops) = 
-    case evaluable of
-        True -> do
-                (stopEvaluation, frameInfo) <- op
-                if stopEvaluation
-                    then return (True, frameInfo)
-                    else evalOperations frameInfo ops
-        False -> evalOperations defaultFrameInfo ops  
-
-gameThread :: GameWorld -> GW () -> IO ()
-gameThread gw gameLoopF = State.evalStateT gameLoopF gw
+-- Redraws GL window and puts message about frame to console.
+redrawFrame :: GLUT.Window -> GW ()
+redrawFrame wnd = State.liftIO . redrawGLWindow $ wnd
 
 -- | Main game loop. Processes incoming MVar (worldVar) and sends outcoming MVar (gameMVar).
-gameLoop :: GLUT.Window -> InteropMsg -> FrameInfo -> GW ()
-gameLoop wnd mvars@(gameMVar, worldMVar) frameInfo@(iter, nextFrameTime) = do
-    curClockTime <- State.liftIO T.getClockTime  
+gameLoop :: GLUT.Window -> InteropMsg -> GameTact -> GW ()
+gameLoop wnd mvars@(gameMVar, worldMVar) gameTact = do
+
+    curTickTime <- State.liftIO getIOTickTime
+    let (isNewFrame, elapsed, newGameTact) = evalGameTact fpsSettings gameTact curTickTime
     
-    State.liftIO ( C.tryPutMVar gameMVar ((iter, curClockTime), "") )
-    maybeWorldServerMessage <- State.liftIO (C.tryTakeMVar worldMVar)
+    when isNewFrame (showFps (gtFps newGameTact) >> redrawFrame wnd)
     
-    let operations = [ ((isJust maybeWorldServerMessage), processMessage maybeWorldServerMessage (iter, curClockTime))
-                     , ((curClockTime >= nextFrameTime),  redraw wnd mvars (iter, nextFrameTime))
-                     ]
-        
-    (done, newFrameInfo) <- State.liftIO (evalOperations frameInfo operations)
-    case done of
-        True ->  State.liftIO . putStrLn $ (gameLoopName ++ " Done.")
-        False -> gameLoop wnd mvars newFrameInfo
+    gameLoop wnd mvars newGameTact
 
 
     

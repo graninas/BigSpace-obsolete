@@ -5,8 +5,9 @@ import qualified Control.Concurrent.MVar as M (MVar)
 import System.Time
 
 import Common.Types
+import Common.TickTime
 
-type GameLoopMsg = M.MVar (FrameInfo, String)
+type GameLoopMsg = M.MVar (GameTact, String)
 type WorldServerMsg = M.MVar String
 
 type InteropMsg = (GameLoopMsg, WorldServerMsg)
