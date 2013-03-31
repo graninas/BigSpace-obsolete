@@ -22,10 +22,22 @@ library
                    QuickCheck,
                    mtl
   ghc-options:     -O1
+  other-modules:   
+                   Common.Trash.CurvedSpaceTrash,
+                   Workflow.Interface.WorkflowManager,
+                   Workflow.Simple.WorkflowManager,
+                   Boot.Bootable,
+                   Workflow.WorkflowFacade
 
 executable CurvedSpace
   hs-source-dirs:  CurvedSpace
   main-is:         CurvedSpace.hs
   build-depends:   base >= 4
   ghc-options:     -O1 -threaded -outputdir ./bin -o ./bin/CurvedSpace ./CurvedSpace/CurvedSpace.hs
+  other-modules:   
+                   Common.Trash.CurvedSpaceTrash,
+                   Workflow.Interface.WorkflowManager,
+                   Workflow.Simple.WorkflowManager,
+                   Boot.Bootable,
+                   Workflow.WorkflowFacade
 
