@@ -2,76 +2,73 @@ module Common.World where
 
 import Common.Types
 
+
+data Quadrant = Quadrant Word
+    deriving (Show, Eq)
 data Axis = XAxis | YAxis | ZAxis | AnyAxis | AnyXYAxis
     deriving (Show, Eq)
-data WorldAxis = WorldAxis Axis Word
+data WorldAxis = WorldAxis Axis Quadrant Double
     deriving (Show, Eq)
+    
+    
+zeroQuadrant = Quadrant 0
 
 instance Num WorldAxis where
-    (+) (WorldAxis a x) (WorldAxis b y) | a == b = WorldAxis a (x + y)
-                                        | otherwise = error "Axes should be same."
-    (-) (WorldAxis a x) (WorldAxis b y) | a == b = WorldAxis a (x - y)
-                                        | otherwise = error "Axes should be same."
-    (*) (WorldAxis a x) (WorldAxis b y) | a == b = WorldAxis a (x * y)
-                                        | otherwise = error "Axes should be same."
-    negate (WorldAxis a x) = WorldAxis a x
-    abs (WorldAxis a x) = WorldAxis a (abs x)
-    signum (WorldAxis a x) = WorldAxis a (signum x)
-    fromInteger x = WorldAxis AnyAxis (fromInteger x)
+    (+) (WorldAxis a (Quadrant q1) x) (WorldAxis b (Quadrant q2) y) | a == b = WorldAxis a (Quadrant $ q1 + q2) (x + y)
+                                              | otherwise = error "Axes should be same."
+    (-) (WorldAxis a (Quadrant q1) x) (WorldAxis b (Quadrant q2) y) | a == b = WorldAxis a (Quadrant $ q1 + q2) (x - y)
+                                              | otherwise = error "Axes should be same."
+    (*) (WorldAxis a (Quadrant q1) x) (WorldAxis b (Quadrant q2) y) | a == b = WorldAxis a (Quadrant $ q1 + q2) (x * y)
+                                              | otherwise = error "Axes should be same."
+    negate (WorldAxis a q x) = WorldAxis a q x
+    abs (WorldAxis a q x) = WorldAxis a q (abs x)
+    signum (WorldAxis a q x) = WorldAxis a q (signum x)
+    fromInteger x = WorldAxis AnyAxis zeroQuadrant (fromInteger x)
 
 toXWorldAxis, toYWorldAxis, toZWorldAxis :: WorldAxis -> WorldAxis
-toXWorldAxis (WorldAxis _ x) = WorldAxis XAxis x
-toYWorldAxis (WorldAxis _ x) = WorldAxis YAxis x
-toZWorldAxis (WorldAxis _ x) = WorldAxis ZAxis x
+toXWorldAxis (WorldAxis _ q x) = WorldAxis XAxis q x
+toYWorldAxis (WorldAxis _ q x) = WorldAxis YAxis q x
+toZWorldAxis (WorldAxis _ q x) = WorldAxis ZAxis q x
 
 class Scalable a where
-    toWorldAxis :: a -> WorldAxis
     fromWorldAxis :: WorldAxis -> a
 -- TODO:
 -- Check whether toString -> substring -> toInt is faster or not of power calculus.
 -- Check whether 'digits' module is faster or not.
-quadrantScale, clusterScale, areaScale, positionScale :: Word
-quadrantScale = 10^19
-clusterScale = 10^18
-areaScale = 10^15
+areaScaleModifier, clusterScaleModifier, clusterScale, areaScale, positionScale :: Word
+areaScaleModifier = 10^3
+clusterScaleModifier = 10^3
 positionScale = 10^12
+areaScale = positionScale * areaScaleModifier
+clusterScale = areaScale * clusterScaleModifier
+
+clusterScaled, areaScaled, positionScaled :: Double
+positionScaled = fromIntegral positionScale
+areaScaled = fromIntegral areaScale
+clusterScaled = fromIntegral clusterScale
 
 
-data Quadrant = Quadrant Word
-    deriving (Show, Eq)
 data Cluster = Cluster Word
     deriving (Show, Eq)
 data Area = Area Word
     deriving (Show, Eq)
-data Position = Position Word
-    deriving (Show, Eq)
-data Layer = Layer Word
+data Position = Position Double
     deriving (Show, Eq)
 data GalaxyGrid = GalaxyXGrid Quadrant Cluster Area Position
                 | GalaxyYGrid Quadrant Cluster Area Position
                 | GalaxyLayer Quadrant Cluster Area Position
     deriving (Show, Eq)
 
-instance Scalable Quadrant where
-    toWorldAxis (Quadrant x) = WorldAxis AnyXYAxis (x * clusterScale)
-    fromWorldAxis (WorldAxis _ x) = Quadrant (x `div` clusterScale)
-    
 instance Scalable Cluster where
-    toWorldAxis (Cluster x) = WorldAxis AnyXYAxis (x * areaScale)
-    fromWorldAxis wd@(WorldAxis _ x) = Cluster ((x `mod` clusterScale) `div` areaScale)
+    fromWorldAxis wd@(WorldAxis _ _ x) = Cluster (truncate (x / areaScaled))
     
 instance Scalable Area where
-    toWorldAxis (Area x) = WorldAxis AnyXYAxis (x * positionScale)
-    fromWorldAxis wd@(WorldAxis _ x) = Area ((x `mod` areaScale) `div` positionScale)
+    fromWorldAxis wd@(WorldAxis _ _ x) = Area ((truncate (x / positionScaled)) `div` clusterScaleModifier)
     
 instance Scalable Position where
-    toWorldAxis (Position x) = WorldAxis AnyXYAxis x
-    fromWorldAxis wd@(WorldAxis _ x) = Position (x `mod` positionScale)
+    fromWorldAxis wd@(WorldAxis _ _ x) = Position ()
         
 instance Scalable GalaxyGrid where
-    toWorldAxis (GalaxyXGrid q c a p) = toXWorldAxis (toWorldAxis q + toWorldAxis c + toWorldAxis a + toWorldAxis p)
-    toWorldAxis (GalaxyYGrid q c a p) = toYWorldAxis (toWorldAxis q + toWorldAxis c + toWorldAxis a + toWorldAxis p)
-    toWorldAxis (GalaxyLayer q c a p) = toZWorldAxis (toWorldAxis q + toWorldAxis c + toWorldAxis a + toWorldAxis p)
     fromWorldAxis wd@(WorldAxis a x) = let
         qd = fromWorldAxis wd
         cl = fromWorldAxis wd

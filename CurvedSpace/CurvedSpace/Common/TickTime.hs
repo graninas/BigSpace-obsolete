@@ -21,6 +21,7 @@ data Elapsed = Elapsed
      { eTicksCount :: Word
      , ePrevTactTime :: TickTime
      , eCurrentTactTime :: TickTime
+     , eElapsedTime :: TickTime -- Subtraction of (eCurrentTactTime, ePrevTactTime)
      }
   deriving (Show, Eq)
 
@@ -51,8 +52,8 @@ evalGameTact (fpsRatio1, fpsRatio2, frequency)
         isNewFrame = curTickTime >= nextTactTime
         newNextTactTimeIfNewFrame = addTickTime frequency curTickTime
         
-        elapsedIfNewFrame = Elapsed ticks prevTactTime curTickTime
-        elapsedIfPrevFrame = Elapsed newTicksFrame prevTactTime curTickTime
+        elapsedIfNewFrame = Elapsed ticks prevTactTime curTickTime elapsedTime
+        elapsedIfPrevFrame = Elapsed newTicksFrame prevTactTime curTickTime elapsedTime
         
         newGameTactIfNewFrame = GameTact newTick curTickTime 0 newTact curTickTime newNextTactTimeIfNewFrame newFps
         newGameTactIfPrevFrame = GameTact newTick tickTime newTicksFrame tact prevTactTime nextTactTime fps

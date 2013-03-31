@@ -19,8 +19,8 @@ import Common.World
 
  
 data GameWorld = GameWorld
-     { objectPos :: WorldDim
-     , objectVelocity :: (Word, Word, Word)
+     { gwObjectPos :: WorldDim
+     , gwObjectVelocity :: (Word, Word, Word)
      }
   deriving (Show, Eq)
 
@@ -60,12 +60,22 @@ showFps fps = State.liftIO . putStrLn $ ("FPS: " ++ show fps)
 
 -- | Prints information about elapsed time since previous frame.
 showElapsed :: Elapsed -> GW ()
-showElapsed (Elapsed ticks prevTime curTime) = State.liftIO $
-    putStrLn ("Ticks: " ++ show ticks ++ " PrevTime: " ++ show prevTime ++ " CurTime: " ++ show curTime)
+showElapsed (Elapsed ticks prevTime curTime elapsedTime) = State.liftIO $
+    putStrLn ("Ticks: " ++ show ticks ++ " PrevTime: " ++ show prevTime
+    ++ " CurTime: " ++ show curTime ++ " ElapsedTime: " ++ show elapsedTime)
 
 -- Redraws GL window and puts message about frame to console.
 redrawFrame :: GLUT.Window -> GW ()
 redrawFrame wnd = State.liftIO . redrawGLWindow $ wnd
+
+recalculateWorld :: Elapsed -> GW ()
+recalculateWorld (Elapsed _ _ _ elapsedTime) = do
+    gw@(GameWorld (WorldDim ax ay az) (vx, vy, vz)) <- State.get
+    let xGrid = fromWorldAxis ax :: GalaxyGrid
+    let yGrid = fromWorldAxis ay :: GalaxyGrid
+    let zGrid = fromWorldAxis az :: GalaxyGrid
+    State.liftIO . putStrLn $ ("ObjPos: \n" ++ show xGrid ++ "\n" ++ show yGrid ++ "\n" ++ show zGrid)
+    
 
 -- | Main game loop. Processes incoming MVar (worldVar) and sends outcoming MVar (gameMVar).
 gameLoop :: GLUT.Window -> InteropMsg -> GameTact -> GW ()
@@ -74,7 +84,7 @@ gameLoop wnd mvars@(gameMVar, worldMVar) gameTact = do
     curTickTime <- State.liftIO getIOTickTime
     let (isNewFrame, elapsed, newGameTact) = evalGameTact fpsSettings gameTact curTickTime
     
-    when isNewFrame (showFps (gtFps newGameTact) >> redrawFrame wnd)
+    when isNewFrame (showFps (gtFps newGameTact) >> recalculateWorld elapsed >> redrawFrame wnd)
     
     gameLoop wnd mvars newGameTact
 

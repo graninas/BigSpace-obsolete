@@ -20,4 +20,5 @@ fpsSlidingRatio1 = 0.99
 fpsSlidingRatio2 = 1 - fpsSlidingRatio1
 
 -- | Fps settings: slidingRatios and frequency.
+fpsSettings :: (Float, Float, TickTime)
 fpsSettings = (fpsSlidingRatio1, fpsSlidingRatio2, tactsFrequency)
