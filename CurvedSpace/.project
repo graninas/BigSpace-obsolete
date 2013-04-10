@@ -3,6 +3,7 @@
 	<name>CurvedSpace</name>
 	<comment></comment>
 	<projects>
+		<project>Library</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -2,7 +2,7 @@ name:           CurvedSpace
 version:        0.1
 cabal-version:  >= 1.2
 build-type:     Simple
-author:         gas
+author:         Alexander Granin
 
 library
   hs-source-dirs:  CurvedSpace
@@ -20,14 +20,19 @@ library
                    OpenGLRaw,
                    old-time,
                    QuickCheck,
-                   mtl
+                   mtl,
+                   old-locale,
+                   containers,
+                   transformers,
+                   BigSpaceLibrary
   ghc-options:     -O1
   other-modules:   
-                   Common.Trash.CurvedSpaceTrash,
-                   Workflow.Interface.WorkflowManager,
-                   Workflow.Simple.WorkflowManager,
-                   Boot.Bootable,
-                   Workflow.WorkflowFacade
+                   Workflow.WorkflowFacade,
+                   Trash.CurvedSpaceTrash,
+                   Workflow.MainWorkflow,
+                   Trash.Crib.MainWorkflow2,
+                   Trash.Crib.MainWorkflow3,
+                   Trash.Crib.MonadNamed
 
 executable CurvedSpace
   hs-source-dirs:  CurvedSpace
@@ -35,9 +40,10 @@ executable CurvedSpace
   build-depends:   base >= 4
   ghc-options:     -O1 -threaded -outputdir ./bin -o ./bin/CurvedSpace ./CurvedSpace/CurvedSpace.hs
   other-modules:   
-                   Common.Trash.CurvedSpaceTrash,
-                   Workflow.Interface.WorkflowManager,
-                   Workflow.Simple.WorkflowManager,
-                   Boot.Bootable,
-                   Workflow.WorkflowFacade
+                   Workflow.WorkflowFacade,
+                   Trash.CurvedSpaceTrash,
+                   Workflow.MainWorkflow,
+                   Trash.Crib.MainWorkflow2,
+                   Trash.Crib.MainWorkflow3,
+                   Trash.Crib.MonadNamed
 

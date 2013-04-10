@@ -1,6 +1,7 @@
 module Main where
 
-import qualified Workflow.WorkflowFacade as W
+import Workflow.WorkflowFacade
+import Workflow.MainWorkflow
 
 
 main::IO ()
@@ -8,8 +9,8 @@ main = do
 
     putStrLn "Loading..."
     
-    W.boot W.workflowManager
     
+    boot mainWorkflow
     
     
     putStrLn "All Ok."
