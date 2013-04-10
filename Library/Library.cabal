@@ -1,0 +1,30 @@
+name:           BigSpaceLibrary
+version:        0.1
+cabal-version:  >= 1.2
+build-type:     Simple
+author:         Alexander Granin
+synopsis:       Library for BigSpace
+description:    Useful experimental tools for BigSpace.
+category:       utils
+copyright:      (C) Alexander Granin, 2013
+license-file:   LICENSE
+license:        BSD3
+
+library
+  hs-source-dirs:  src
+  build-depends:   
+                   base >= 4,
+                   mtl,
+                   transformers
+  ghc-options:     -O1
+  other-modules:   
+                   Control.Monad.Named,
+                   Control.Monad.Named.Class,
+                   Control.Monad.Named.Lazy,
+                   Control.Monad.Trans.Named,
+                   Control.Monad.Trans.Named.Lazy
+  extensions:      
+                   FlexibleInstances, 
+                   FunctionalDependencies, 
+                   MultiParamTypeClasses
+
