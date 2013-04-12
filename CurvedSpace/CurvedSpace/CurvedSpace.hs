@@ -10,7 +10,7 @@ main = do
     putStrLn "Loading..."
     
     
-    boot mainWorkflow
+    boot "WF1" wfList
     
     
     putStrLn "All Ok."

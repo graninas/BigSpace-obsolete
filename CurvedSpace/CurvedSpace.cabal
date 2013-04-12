@@ -32,7 +32,8 @@ library
                    Workflow.MainWorkflow,
                    Trash.Crib.MainWorkflow2,
                    Trash.Crib.MainWorkflow3,
-                   Trash.Crib.MonadNamed
+                   Trash.Crib.MonadNamed,
+                   Trash.Crib.MainWorkflow4Success
 
 executable CurvedSpace
   hs-source-dirs:  CurvedSpace
@@ -45,5 +46,6 @@ executable CurvedSpace
                    Workflow.MainWorkflow,
                    Trash.Crib.MainWorkflow2,
                    Trash.Crib.MainWorkflow3,
-                   Trash.Crib.MonadNamed
+                   Trash.Crib.MonadNamed,
+                   Trash.Crib.MainWorkflow4Success
 

@@ -18,7 +18,6 @@ library
                    transformers
   ghc-options:     -O1
   other-modules:   
-                   Control.Monad.Named,
                    Control.Monad.Named.Class,
                    Control.Monad.Named.Lazy,
                    Control.Monad.Trans.Named,
@@ -27,4 +26,5 @@ library
                    FlexibleInstances, 
                    FunctionalDependencies, 
                    MultiParamTypeClasses
+  exposed-modules: Control.Monad.Named
 

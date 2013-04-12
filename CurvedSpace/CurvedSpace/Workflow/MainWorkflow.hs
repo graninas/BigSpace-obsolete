@@ -2,4 +2,4 @@ module Workflow.MainWorkflow where
 
 
 
-mainWorkflow = undefined
+mainWorkflow = error "main workflow undefined"
