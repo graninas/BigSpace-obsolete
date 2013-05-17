@@ -1,12 +1,17 @@
 module Game.Environment where
 
 import Graphics.UI.SDL
+import qualified Graphics.UI.SDL.TTF.General as TTF
+
+import Control.Exception (bracket_, bracket)
 
 
-runEnvironment scrWidth scrHeight scrBpp cont = withInit [InitEverything] $ do
-    screen <- setVideoMode scrWidth scrHeight scrBpp [SWSurface]
-    setCaption "CurvedSpace" []
+withTtf action = bracket_ (TTF.init) (TTF.quit) action
+
+withEnvironment action = withTtf (withInit [InitEverything] action)
+
+setupScreen scrWidth scrHeight scrBpp caption = do
+    videoSurface <- setVideoMode scrWidth scrHeight scrBpp [SWSurface]
+    setCaption caption []
     
-    Graphics.UI.SDL.flip screen
-    
-    cont
+    Graphics.UI.SDL.flip videoSurface

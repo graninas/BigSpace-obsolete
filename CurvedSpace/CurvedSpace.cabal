@@ -27,13 +27,14 @@ library
   ghc-options:     -O1
   other-modules:   
                    Game.Boot,
-                   Game.Workflow.GameCycle,
                    Utils.Logger,
-                   Workflow.WireWF,
                    Workflow.Workflow,
                    Trash.Crib.Curses,
                    Game.Environment,
-                   Utils.SDLKeys
+                   SDL.Keys,
+                   Wire.Wire,
+                   Game.Wires,
+                   Utils.Colors
   hs-source-dirs:  CurvedSpace
 
 executable CurvedSpace
@@ -43,11 +44,12 @@ executable CurvedSpace
   ghc-options:     -O1 -threaded -outputdir ./bin -o ./bin/CurvedSpace ./CurvedSpace/CurvedSpace.hs
   other-modules:   
                    Game.Boot,
-                   Game.Workflow.GameCycle,
                    Utils.Logger,
-                   Workflow.WireWF,
                    Workflow.Workflow,
                    Trash.Crib.Curses,
                    Game.Environment,
-                   Utils.SDLKeys
+                   SDL.Keys,
+                   Wire.Wire,
+                   Game.Wires,
+                   Utils.Colors
 

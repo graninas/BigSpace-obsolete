@@ -1,13 +1,28 @@
-module Utils.SDLKeys where
+module SDL.Keys where
 
 import Graphics.UI.SDL
 
 import qualified Data.Map as Map
 
-translateChar :: SDLKey -> Maybe Char
-translateChar key = Map.lookup key letterKeys
+extractChar :: SDLKey -> Map.Map SDLKey Char -> Maybe Char
+extractChar = Map.lookup
 
-letterKeys = Map.fromList
+
+sdlDigits, sdlLetters :: Map.Map SDLKey Char
+sdlDigits = Map.fromList
+            [ (SDLK_0, '0')     
+            , (SDLK_1, '1')
+            , (SDLK_2, '2')
+            , (SDLK_3, '3')
+            , (SDLK_4, '4')
+            , (SDLK_5, '5')
+            , (SDLK_6, '6')
+            , (SDLK_7, '7')
+            , (SDLK_8, '8')
+            , (SDLK_9, '9')
+           ]
+
+sdlLetters = Map.fromList
             [ (SDLK_a, 'a')
             , (SDLK_b, 'b')
             , (SDLK_c, 'c')

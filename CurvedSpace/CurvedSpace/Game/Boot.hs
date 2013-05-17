@@ -1,19 +1,12 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Game.Boot where
 
-import Control.Wire
-import Prelude hiding ((.), id)
-
 import Game.Environment
-import Game.Workflow.GameCycle
+import Game.Wires
 
-import Workflow.Workflow
+import Wire.Wire
 
-
-
-boot = do
-    runEnvironment 640 480 32 game
-  where
-    game = startWorkflow (return) (putStrLn . show) wfDef
-    wfDef = when ( /= Nothing) . wfWire
+boot = withEnvironment $ do
+    setupScreen 640 480 32 "CurvedSpace"
+    startWire return (putStrLn . show) mainMenuWire
     
