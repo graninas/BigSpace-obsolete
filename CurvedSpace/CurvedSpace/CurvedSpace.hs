@@ -7,9 +7,6 @@ main = do
 
     putStrLn "Loading..."
     
-    
-    ch <- boot
-    putStrLn $ "Ch: " ++ show ch
-    
+    boot
     
     putStrLn $ "All Ok."

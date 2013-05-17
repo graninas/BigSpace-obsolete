@@ -30,7 +30,10 @@ library
                    Game.Workflow.GameCycle,
                    Utils.Logger,
                    Workflow.WireWF,
-                   Workflow.Workflow
+                   Workflow.Workflow,
+                   Trash.Crib.Curses,
+                   Game.Environment,
+                   Utils.SDLKeys
   hs-source-dirs:  CurvedSpace
 
 executable CurvedSpace
@@ -43,5 +46,8 @@ executable CurvedSpace
                    Game.Workflow.GameCycle,
                    Utils.Logger,
                    Workflow.WireWF,
-                   Workflow.Workflow
+                   Workflow.Workflow,
+                   Trash.Crib.Curses,
+                   Game.Environment,
+                   Utils.SDLKeys
 

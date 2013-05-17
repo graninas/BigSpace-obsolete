@@ -1,34 +1,19 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Game.Boot where
 
-import qualified UI.Nanocurses.Curses as Curses
+import Control.Wire
+import Prelude hiding ((.), id)
 
-import Workflow.Workflow
+import Game.Environment
 import Game.Workflow.GameCycle
 
+import Workflow.Workflow
 
-keyPressed :: IO (Maybe Char)
-keyPressed = do
-    ch <- Curses.getCh
-    return (Just ch)
-
-setupEnvironment = do
-    Curses.initCurses (return ())
-    Curses.resetParams
-    Curses.keypad Curses.stdScr True    -- grab the keyboard
-
-
-tearDownEnvironment = Curses.endWin
 
 
 boot = do
-    putStrLn "Begin..."
-    setupEnvironment
+    runEnvironment 640 480 32 game
+  where
+    game = startWorkflow (return) (putStrLn . show) wfDef
+    wfDef = when ( /= Nothing) . wfWire
     
-    ch <- keyPressed
-    putStrLn $ "Char got."
-
-    
-    tearDownEnvironment
-    putStrLn "End..."
-    return ch
