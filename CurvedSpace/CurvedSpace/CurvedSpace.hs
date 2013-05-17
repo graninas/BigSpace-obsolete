@@ -1,8 +1,6 @@
 module Main where
 
-import Workflow.WorkflowFacade
-import Workflow.MainWorkflow
-
+import Game.Boot
 
 main::IO ()
 main = do
@@ -10,7 +8,8 @@ main = do
     putStrLn "Loading..."
     
     
-    boot "WF1" wfList
+    ch <- boot
+    putStrLn $ "Ch: " ++ show ch
     
     
-    putStrLn "All Ok."
+    putStrLn $ "All Ok."

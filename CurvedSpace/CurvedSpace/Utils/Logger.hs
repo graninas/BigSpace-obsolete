@@ -1,4 +1,4 @@
-module Workflow.Logger (
+module Utils.Logger (
     err,
     inf,
     inf1,
