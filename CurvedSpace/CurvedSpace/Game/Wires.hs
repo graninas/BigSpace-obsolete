@@ -33,16 +33,19 @@ gameWire = drawMenuWire mainMenu
 
 
 drawMenuWire (Menu selected items) =
-    drawMenuItemWire selected
+    (   drawActiveMenuItemWire   . when (\(_, item) -> getIndex item == selected)
+    <|> drawInactiveMenuItemWire . when (\(_, item) -> getIndex item /= selected)
+    )
     . list (zip coords items)
   where
     coords = (verticalCoordsStrip (0, 100) menuItemDY)
 
-drawMenuItemWire :: Int -> Wire () IO (Pos2D, MenuItem) ()
-drawMenuItemWire selected = mkFixM $ \_ ((x, y), MenuItem (itemIndex, name)) -> do 
-    drawText x y textSize (if selected == itemIndex
-        then activeMenuColor
-        else inactiveMenuColor) name
+drawActiveMenuItemWire, drawInactiveMenuItemWire :: Wire () IO (Pos2D, MenuItem) ()
+drawActiveMenuItemWire = mkFixM $ \_ -> drawMenuItem activeMenuColor
+drawInactiveMenuItemWire = mkFixM $ \_ -> drawMenuItem inactiveMenuColor
+    
+drawMenuItem color ((x, y), MenuItem (itemIndex, name)) = do 
+    drawText x y textSize color name
     return (Right ())
     
 verticalCoordsStrip :: Pos2D -> Int -> [Pos2D]
