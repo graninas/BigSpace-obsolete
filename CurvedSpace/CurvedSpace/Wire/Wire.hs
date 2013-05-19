@@ -5,8 +5,6 @@ import Control.Monad.Identity (Identity)
 import Prelude hiding ((.), id)
 
 
-makeWire io = mkFixM $ \_ _ -> io 
-
 startWire inhibitor producer wire = loop wire clockSession
   where
     loop w session = do

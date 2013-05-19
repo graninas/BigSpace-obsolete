@@ -7,6 +7,11 @@ import qualified Data.Map as Map
 extractChar :: SDLKey -> Map.Map SDLKey Char -> Maybe Char
 extractChar = Map.lookup
 
+isUpKey (KeyDown (Keysym key _ _)) = key == SDLK_UP
+isUpKey _ = False
+
+isDownKey (KeyDown (Keysym key _ _)) = key == SDLK_DOWN
+isDownKey _ = False
 
 sdlDigits, sdlLetters :: Map.Map SDLKey Char
 sdlDigits = Map.fromList

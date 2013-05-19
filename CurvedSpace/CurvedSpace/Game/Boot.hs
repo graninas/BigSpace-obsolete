@@ -8,5 +8,5 @@ import Wire.Wire
 
 boot = withEnvironment $ do
     setupScreen 640 480 32 "CurvedSpace"
-    startWire return (putStrLn . show) mainMenuWire
+    startWire return (putStrLn . show) gameWire
     

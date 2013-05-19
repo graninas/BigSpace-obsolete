@@ -32,9 +32,10 @@ library
                    Trash.Crib.Curses,
                    Game.Environment,
                    SDL.Keys,
-                   Wire.Wire,
                    Game.Wires,
-                   Utils.Colors
+                   SDL.Helpers,
+                   Wire.Wire,
+                   Utils.Constants
   hs-source-dirs:  CurvedSpace
 
 executable CurvedSpace
@@ -49,7 +50,8 @@ executable CurvedSpace
                    Trash.Crib.Curses,
                    Game.Environment,
                    SDL.Keys,
-                   Wire.Wire,
                    Game.Wires,
-                   Utils.Colors
+                   SDL.Helpers,
+                   Wire.Wire,
+                   Utils.Constants
 
