@@ -37,7 +37,9 @@ library
                    Game.Input,
                    Game.World,
                    Game.Draw,
-                   Game.Wire
+                   Game.Wire,
+                   Game.Output,
+                   Game.Menu.Menu
   hs-source-dirs:  CurvedSpace
 
 executable CurvedSpace
@@ -57,5 +59,7 @@ executable CurvedSpace
                    Game.Input,
                    Game.World,
                    Game.Draw,
-                   Game.Wire
+                   Game.Wire,
+                   Game.Output,
+                   Game.Menu.Menu
 
