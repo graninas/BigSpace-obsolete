@@ -1,4 +1,4 @@
-module Game.Wires where
+module Trash.Crib.MenuWire where
 
 import Graphics.UI.SDL
 import Graphics.UI.SDL.Video
@@ -12,7 +12,6 @@ import Utils.Constants
 import SDL.Helpers
 import SDL.Keys
 
-
 makeWire io = mkFixM $ \_ _ -> io 
 
 
@@ -21,24 +20,28 @@ pollEventWire = makeWire $ do
     return (Right e)
 
 
-gameWire = drawMenuWire' mainMenu
-{-
-    accum (\menu func -> func menu) mainMenu
-    . (   pure toPrev . when isUpKey
-      <|> pure toNext . when isDownKey
-      )
-    . pollEventWire
--}
+upkeyEvent :: SDLEvent -> Bool
+upkeyEvent = undefined
 
-drawMenuWire' (Menu selected items) =
+drawMenuWire :: Wire () IO Menu Menu
+drawMenuWire =
+    ifW isActiveMenuItemWire drawActiveMenuItemWire drawInactiveMenuItemWire
+    . verticalMenuWire
+
+verticalMenuWire = mkFixM $ \_ menu -> let
+    (Menu _ items) = menu
+    coords = (verticalCoordsStrip (0, 100) menuItemDY)
+    in list (zip coords items)
+
+
+drawMenuWire' (Menu _ items) =
     ifW isActiveMenuItemWire drawActiveMenuItemWire drawInactiveMenuItemWire
     . list (zip coords items)
   where
     coords = (verticalCoordsStrip (0, 100) menuItemDY)
 
-isActiveMenuItemWire :: Wire () IO (Pos2D, MenuItem) Bool
-isActiveMenuItemWire = mkFix $ \_ (_, MenuItem (_, isSelected, _)) -> Right isSelected 
 
+{-
 drawMenuWire (Menu selected items) =
     (   drawActiveMenuItemWire   . when (\(_, item) -> getIndex item == selected)
     <|> drawInactiveMenuItemWire . when (\(_, item) -> getIndex item /= selected)
@@ -46,14 +49,20 @@ drawMenuWire (Menu selected items) =
     . list (zip coords items)
   where
     coords = (verticalCoordsStrip (0, 100) menuItemDY)
+-}
 
 drawActiveMenuItemWire, drawInactiveMenuItemWire :: Wire () IO (Pos2D, MenuItem) ()
 drawActiveMenuItemWire = mkFixM $ \_ -> drawMenuItem activeMenuColor
 drawInactiveMenuItemWire = mkFixM $ \_ -> drawMenuItem inactiveMenuColor
-    
+
 drawMenuItem color ((x, y), MenuItem (_, _, name)) = do 
     drawText x y textSize color name
     return (Right ())
+
+isActiveMenuItemWire :: Wire () IO (Pos2D, MenuItem) Bool
+isActiveMenuItemWire = mkFix $ \_ (_, MenuItem (_, isSelected, _)) -> Right isSelected 
+
+
     
 verticalCoordsStrip :: Pos2D -> Int -> [Pos2D]
 verticalCoordsStrip (startX, startY) dy = [(startX, y) | y <- [startY, startY + dy..]]
@@ -82,4 +91,3 @@ class Enumerated a where
   
 instance Enumerated MenuItem where
     getIndex (MenuItem (index, _, _)) = index
-    

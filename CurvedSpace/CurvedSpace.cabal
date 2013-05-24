@@ -28,14 +28,16 @@ library
   other-modules:   
                    Game.Boot,
                    Utils.Logger,
-                   Workflow.Workflow,
                    Trash.Crib.Curses,
                    Game.Environment,
                    SDL.Keys,
-                   Game.Wires,
                    SDL.Helpers,
-                   Wire.Wire,
-                   Utils.Constants
+                   Utils.Constants,
+                   Trash.Crib.MenuWire,
+                   Game.Input,
+                   Game.World,
+                   Game.Draw,
+                   Game.Wire
   hs-source-dirs:  CurvedSpace
 
 executable CurvedSpace
@@ -46,12 +48,14 @@ executable CurvedSpace
   other-modules:   
                    Game.Boot,
                    Utils.Logger,
-                   Workflow.Workflow,
                    Trash.Crib.Curses,
                    Game.Environment,
                    SDL.Keys,
-                   Game.Wires,
                    SDL.Helpers,
-                   Wire.Wire,
-                   Utils.Constants
+                   Utils.Constants,
+                   Trash.Crib.MenuWire,
+                   Game.Input,
+                   Game.World,
+                   Game.Draw,
+                   Game.Wire
 
