@@ -1,11 +1,11 @@
 module Game.World where
 
-import qualified Game.Common as C
+import qualified Game.Wire as W
 
 type Inhibitor = ()
 
 
 class World a where
-    pollInput :: C.Time -> a -> IO (Either Inhibitor a)
-    modify :: C.Time -> a -> IO (Either Inhibitor a)
-    postOutput :: C.Time -> a -> IO (Either Inhibitor a)
+    pollInput :: W.Time -> a -> IO (Either Inhibitor a)
+    modify :: W.Time -> a -> IO (Either Inhibitor a)
+    postOutput :: W.Time -> a -> IO (Either Inhibitor a)
