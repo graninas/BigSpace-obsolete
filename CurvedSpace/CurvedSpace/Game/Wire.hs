@@ -1,39 +1,34 @@
 module Game.Wire where
 
-import Control.Wire
-import qualified Control.Monad as M
-import Prelude hiding ((.), id)
-
-import Game.Input
+import qualified Game.Common as C
 import Game.World
-import Game.Output
 
-startWire inhibitor wire sw = loop wire clockSession sw
+startWire :: World w =>
+             (Inhibitor -> IO ())
+            -> C.Wire Inhibitor IO w w
+            -> w
+            -> IO ()
+startWire inhibitor wire = loop wire C.clockSession
   where
     loop w session world = do
-        (mx, w', session') <- stepSession w session world
+        (mx, w', session') <- C.stepSession w session world
         case mx of
           Left ex -> inhibitor ex
           Right newWorld -> loop w' session' newWorld
 
-outputWire :: Wire () IO w w
-outputWire = mkFixM $ \dt world -> do
-    postOutput dt world
-    return (Right world)
+outputWire :: World w => C.Wire Inhibitor IO w w
+outputWire = C.mkFixM postOutput
 
-modifyWire :: Wire () IO (w, i) w
-modifyWire = mkFixM $ \dt (world, i) -> do
-    newWorld <- modify dt world i
-    return $ Right newWorld
+modifyWire :: World w => C.Wire Inhibitor IO w w
+modifyWire = C.mkFixM modify
 
-inputWire :: Wire () IO w (w, GameInput Time)
-inputWire = mkFixM $ \dt world -> do
-    i <- pollInput dt world
-    return $ Right (world, i)
+inputWire :: World w => C.Wire Inhibitor IO w w
+inputWire = C.mkFixM pollInput
 
+gameWire :: World w => C.Wire Inhibitor IO w w  
 gameWire = outputWire
-         . modifyWire
-         . inputWire
+         C.. modifyWire
+         C.. inputWire
 
 
 
