@@ -10,7 +10,8 @@ withTtf action = bracket_ (TTF.init) (TTF.quit) action
 
 withEnvironment action = withTtf (withInit [InitEverything] action)
 
-setupScreen scrWidth scrHeight scrBpp caption = do
+setupScreen :: (Int, Int, Int) -> String -> IO ()
+setupScreen (scrWidth, scrHeight, scrBpp) caption = do
     videoSurface <- setVideoMode scrWidth scrHeight scrBpp [SWSurface]
     setCaption caption []
     

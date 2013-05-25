@@ -3,6 +3,7 @@ module Game.MainLoop where
 import qualified Game.Wire as W
 import Game.World
 
+-- | Starting main loop. Takes a wire to loop.
 startMainLoop :: World w =>
              (Inhibitor -> IO ())
             -> W.Wire Inhibitor IO w w
@@ -25,13 +26,8 @@ modifyWire = W.mkFixM modify
 inputWire :: World w => W.Wire Inhibitor IO w w
 inputWire = W.mkFixM pollInput
 
+-- | Main loop wire.
 mainLoopWire :: World w => W.Wire Inhibitor IO w w  
 mainLoopWire = outputWire
            W.. modifyWire
            W.. inputWire
-
-
-
-
-
-    

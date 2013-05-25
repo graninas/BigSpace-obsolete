@@ -6,6 +6,7 @@ type Inhibitor = ()
 
 
 class World a where
-    pollInput :: W.Time -> a -> IO (Either Inhibitor a)
     modify :: W.Time -> a -> IO (Either Inhibitor a)
     postOutput :: W.Time -> a -> IO (Either Inhibitor a)
+    pollInput :: W.Time -> a -> IO (Either Inhibitor a)
+    
