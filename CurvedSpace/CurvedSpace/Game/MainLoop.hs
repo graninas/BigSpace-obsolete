@@ -24,7 +24,7 @@ modifyWire :: World w => W.Wire Inhibitor IO w w
 modifyWire = W.mkFixM modify
 
 inputWire :: World w => W.Wire Inhibitor IO w w
-inputWire = W.mkFixM pollInput
+inputWire = pollInput
 
 -- | Main loop wire.
 mainLoopWire :: World w => W.Wire Inhibitor IO w w  

@@ -34,13 +34,17 @@ library
                    SDL.Helpers,
                    Utils.Constants,
                    Trash.Crib.MenuWire,
-                   Game.Input,
                    Game.World,
                    Game.Draw,
                    Game.Output,
                    Game.Menu.Menu,
                    Game.MainLoop,
-                   Game.Wire
+                   Game.Wire,
+                   Game.Input.Keys,
+                   Game.Input.Input,
+                   SDL.Common,
+                   Game.Input.InputBuffer,
+                   SDL.Events
   hs-source-dirs:  CurvedSpace
 
 executable CurvedSpace
@@ -57,11 +61,15 @@ executable CurvedSpace
                    SDL.Helpers,
                    Utils.Constants,
                    Trash.Crib.MenuWire,
-                   Game.Input,
                    Game.World,
                    Game.Draw,
                    Game.Output,
                    Game.Menu.Menu,
                    Game.MainLoop,
-                   Game.Wire
+                   Game.Wire,
+                   Game.Input.Keys,
+                   Game.Input.Input,
+                   SDL.Common,
+                   Game.Input.InputBuffer,
+                   SDL.Events
 
