@@ -10,38 +10,47 @@ import Game.World
 
 import Utils.Constants
 
-data Menu = Menu { menuItems :: String
+data MenuItem = MenuItem { menuItemName :: String
+                         }
+
+data Menu = Menu { menuItems :: [MenuItem]
                  , menuSelected :: Int
+                 , menuInputBuffer :: I.InputBuffer
                  }
 
-moveItem :: I.TimeInput -> Menu -> Menu
-moveItem input menu | I.isUpKey input = toPrev menu
-                    | I.isDownKey input = toNext menu  
-                    | otherwise = error "Key is not supported."
+moveMenuItem :: Menu -> I.TimeInput -> Menu
+moveMenuItem menu input | I.isUpKey input = toPrev menu
+                        | I.isDownKey input = toNext menu  
+                        | otherwise = menu
 
 toPrev, toNext :: Menu -> Menu
-toPrev menu@(Menu its sel) | sel == 0  = menu { menuSelected = length its - 1 }
-                           | otherwise = menu { menuSelected = sel - 1 }
+toPrev menu@(Menu its sel _) | sel == 0  = menu { menuSelected = length its - 1 }
+                             | otherwise = menu { menuSelected = sel - 1 }
 
-toNext menu@(Menu its sel) | sel == length its = menu { menuSelected = 0 }
-                           | otherwise = menu { menuSelected = sel + 1 }
+toNext menu@(Menu its sel _) | sel == length its = menu { menuSelected = 0 }
+                             | otherwise = menu { menuSelected = sel + 1 }
 
 instance World Menu where
-    postOutput _ buf = do
-        let menu@(Menu items _) = I.bufferItem buf
-        putStrLn $ "Taking menu:" ++ unwords items
-        return . Right $ menu
+    postOutput = W.mkFixM postOutput'
+    modify = W.mkFixM modify'
+    pollInput = W.mkFixM pollInput'
 
-    modify _ buf = do
-            let menu = I.bufferItem buf
-            let inputs = I.bufferInputs buf
-            let newMenu = foldr moveItem menu inputs
-            return . Right $ I.mkBuf newMenu
+postOutput' :: W.Time -> Menu -> IO (Either (W.Inhibitor w) Menu)
+postOutput' _ menu@(Menu items selected _) = do
+    mapM_ putMenuItem (zip [0..] items)
+    return . Right $ menu
+  where
+    putMenuItem (i, MenuItem name) | i == selected = putStrLn $ "> " ++ name
+                                   | otherwise     = putStrLn $ "  " ++ name 
 
-    pollInput = W.mkFixM $ \dt buf -> do
+modify' :: W.Time -> Menu -> IO (Either (W.Inhibitor w) Menu)
+modify' _ menu@(Menu _ _ inputBuffer) = do
+    let modifiedMenu = foldl moveMenuItem menu (I.bufferInputs inputBuffer)
+    return . Right $ modifiedMenu { menuInputBuffer = I.emptyInputBuffer }
+
+pollInput' :: W.Time -> Menu -> IO (Either (W.Inhibitor w) Menu)
+pollInput' dt menu@(Menu _ _ inputBuffer) = do
         i <- I.pollInput dt
         if I.notEmpty i
-            then return . Right $ I.addInput buf i
-            else return . Right $ buf
-            
-            
+            then return . Right $ menu { menuInputBuffer = I.addInput inputBuffer i}
+            else return . Right $ menu
