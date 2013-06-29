@@ -3,6 +3,7 @@ module SDL.Keys where
 import Graphics.UI.SDL
 
 import qualified Data.Map as Map
+import qualified Data.Char as C
 
 extractChar :: SDLKey -> Map.Map SDLKey Char -> Maybe Char
 extractChar = Map.lookup
@@ -13,9 +14,18 @@ isUpKey _ = False
 isDownKey (KeyDown (Keysym key _ _)) = key == SDLK_DOWN
 isDownKey _ = False
 
+isLetter l (KeyDown (Keysym key _ _)) =
+    Map.member (C.toLower l) lettersSdl
+
 sdlDigits, sdlLetters :: Map.Map SDLKey Char
-sdlDigits = Map.fromList
-            [ (SDLK_0, '0')     
+sdlDigits = Map.fromList sdlDigitsAssoc
+sdlLetters = Map.fromList sdlLettersAssoc
+
+digitsSdl, lettersSdl :: Map.Map Char SDLKey
+digitsSdl = Map.fromList digitsSdlAssoc
+lettersSdl = Map.fromList lettersSdlAssoc
+
+sdlDigitsAssoc = [ (SDLK_0, '0')     
             , (SDLK_1, '1')
             , (SDLK_2, '2')
             , (SDLK_3, '3')
@@ -26,8 +36,9 @@ sdlDigits = Map.fromList
             , (SDLK_8, '8')
             , (SDLK_9, '9')
            ]
+digitsSdlAssoc = map reversePair sdlDigitsAssoc
 
-sdlLetters = Map.fromList
+sdlLettersAssoc = 
             [ (SDLK_a, 'a')
             , (SDLK_b, 'b')
             , (SDLK_c, 'c')
@@ -55,4 +66,6 @@ sdlLetters = Map.fromList
             , (SDLK_y, 'y')
             , (SDLK_z, 'z')
             ]
+lettersSdlAssoc = map reversePair sdlLettersAssoc
 
+reversePair = \(a, b) -> (b, a)

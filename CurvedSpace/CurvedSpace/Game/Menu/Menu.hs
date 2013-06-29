@@ -6,6 +6,7 @@ import qualified Game.Wire as W
 import qualified Game.Input.Input as I
 import qualified Game.Input.Keys as I
 import qualified Game.Input.InputBuffer as I
+import Game.MainLoop
 import Game.World
 
 import Utils.Constants
@@ -34,8 +35,21 @@ instance World Menu where
     postOutput = W.mkFixM postOutput'
     modify = W.mkFixM modify'
     pollInput = W.mkFixM pollInput'
+    
+    --worldWire :: W.Wire W.Inhibitor IO a a
+    worldWire =  
+        unlessQuitWire W..
+        (
+            
+        )   
 
-postOutput' :: W.Time -> Menu -> IO (Either (W.Inhibitor w) Menu)
+unlessQuitWire :: W.Wire W.Inhibitor IO (I.TimeInput, w) w
+unlessQuitWire = ???? . W.unless (\(i, _) -> isQuit i)
+
+isQuit :: I.TimeInput -> Bool
+isQuit = I.isLetter 'q'
+
+postOutput' :: W.Time -> Menu -> IO (Either W.Inhibitor Menu)
 postOutput' _ menu@(Menu items selected _) = do
     mapM_ putMenuItem (zip [0..] items)
     return . Right $ menu
@@ -43,12 +57,12 @@ postOutput' _ menu@(Menu items selected _) = do
     putMenuItem (i, MenuItem name) | i == selected = putStrLn $ "> " ++ name
                                    | otherwise     = putStrLn $ "  " ++ name 
 
-modify' :: W.Time -> Menu -> IO (Either (W.Inhibitor w) Menu)
+modify' :: W.Time -> Menu -> IO (Either W.Inhibitor Menu)
 modify' _ menu@(Menu _ _ inputBuffer) = do
     let modifiedMenu = foldl moveMenuItem menu (I.bufferInputs inputBuffer)
     return . Right $ modifiedMenu { menuInputBuffer = I.emptyInputBuffer }
 
-pollInput' :: W.Time -> Menu -> IO (Either (W.Inhibitor w) Menu)
+pollInput' :: W.Time -> Menu -> IO (Either W.Inhibitor Menu)
 pollInput' dt menu@(Menu _ _ inputBuffer) = do
         i <- I.pollInput dt
         if I.notEmpty i

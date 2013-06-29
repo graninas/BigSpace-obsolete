@@ -11,15 +11,8 @@ startMainLoop wire = loop wire W.clockSession
     loop w session world = do
         (mx, w', session') <- W.stepSession w session world
         case mx of
-          Left (W.SwitchWire nextWire nextWorld) -> do
-            putStrLn "Switching to another wire."
-            loop nextWire session' nextWorld
-          Left W.Quit -> do
-            putStrLn "Quiting."
-            return ()
+          Left ex -> error "Inhibition is undefined."
           Right newWorld -> loop w' session' newWorld
           
-mainLoopWire :: World world => W.Wire (W.Inhibitor world) IO world world
-mainLoopWire =   postOutput
-         W.. modify
-         W.. pollInput 
+mainLoopWire :: World world => W.Wire W.Inhibitor IO world world
+mainLoopWire = worldWire 

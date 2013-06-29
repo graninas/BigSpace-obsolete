@@ -11,3 +11,6 @@ notEmpty = (SDL.noEvent /=) . inputEvent
 isUpKey, isDownKey :: TimeInput -> Bool
 isUpKey = SDL.isUpKey . inputEvent
 isDownKey = SDL.isDownKey . inputEvent
+
+isLetter :: Char -> TimeInput -> Bool
+isLetter k = SDL.isLetter k . inputEvent
