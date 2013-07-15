@@ -27,7 +27,6 @@ library
   ghc-options:     -O1
   other-modules:   
                    Game.Boot,
-                   Utils.Logger,
                    Trash.Crib.Curses,
                    Game.Environment,
                    SDL.Keys,
@@ -44,7 +43,10 @@ library
                    Game.Input.Input,
                    SDL.Common,
                    Game.Input.InputBuffer,
-                   SDL.Events
+                   SDL.Events,
+                   Utils.Logging.Logger2,
+                   Utils.Time.Time,
+                   Utils.Logging.Formatter
   hs-source-dirs:  CurvedSpace
 
 executable CurvedSpace
@@ -54,7 +56,6 @@ executable CurvedSpace
   ghc-options:     -O1 -threaded -outputdir ./bin -o ./bin/CurvedSpace ./CurvedSpace/CurvedSpace.hs
   other-modules:   
                    Game.Boot,
-                   Utils.Logger,
                    Trash.Crib.Curses,
                    Game.Environment,
                    SDL.Keys,
@@ -71,5 +72,10 @@ executable CurvedSpace
                    Game.Input.Input,
                    SDL.Common,
                    Game.Input.InputBuffer,
-                   SDL.Events
+                   SDL.Events,
+                   Utils.Logging.Logger2,
+                   Utils.Time.Time,
+                   Utils.Logging.Formatter
+
+Logging.Logger
 
